@@ -1,5 +1,6 @@
 package com.hcl.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -9,10 +10,17 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
+import com.hcl.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
+@CrossOrigin
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	@Autowired
+	private CustomUserDetailsService customUserDetailsService;
 
 //	protected void configure(HttpSecurity http) throws Exception {
 //
@@ -32,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 		http
 			.authorizeHttpRequests()
-				.antMatchers("/signin").permitAll()
+				.antMatchers("/signin", "/registrationPage", "/register").permitAll()
 				.anyRequest()
 						.authenticated()
 							.and()
@@ -44,13 +52,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		System.out.println("inside configurer...");
+		System.out.println("inside configurer...1");
 
-		String passwordEncoded = this.passwordEncoder().encode("Ali");
-		System.out.println("Encoded Password " + passwordEncoded);
-
-		auth.inMemoryAuthentication().withUser("Suhail").password(passwordEncoded).roles("EMPLOYEE");
-		auth.inMemoryAuthentication().withUser("Shalini").password(this.passwordEncoder().encode("Singh")).roles("ADMIN");
+//		String suhailPasswordEncoded = this.passwordEncoder().encode("Ali");
+//		System.out.println("suhailPasswordEncoded " + suhailPasswordEncoded);
+//		
+//		String shaliniEncodedPassword = this.passwordEncoder().encode("Singh");
+//		System.out.println("shaliniEncodedPassword "+shaliniEncodedPassword);
+//
+//		auth.inMemoryAuthentication().withUser("Suhail").password(suhailPasswordEncoded).roles("EMPLOYEE");
+//		auth.inMemoryAuthentication().withUser("Shalini").password(shaliniEncodedPassword).roles("ADMIN");
+		
+		auth.userDetailsService(customUserDetailsService).passwordEncoder(this.passwordEncoder());
+		System.out.println("inside configurer...2");
 	}
 
 //	@Bean
@@ -61,7 +75,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
-
+		System.out.println("Inside PasswordEncoder()...");
 		return new BCryptPasswordEncoder();
 	}
 
